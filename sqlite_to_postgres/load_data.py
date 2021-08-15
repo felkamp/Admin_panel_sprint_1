@@ -5,9 +5,9 @@ import psycopg2
 from dotenv import load_dotenv
 from sqlite3 import Cursor as _sqlite_cursor
 from psycopg2.extensions import cursor as _pg_cursor
-from os import remove
 
-load_dotenv()
+dotenv_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".env")
+load_dotenv(dotenv_path)
 
 
 def save_csv(file_name: str, cur: _sqlite_cursor):
@@ -33,7 +33,7 @@ def transfer_data_from_sqlite() -> None:
         user=os.environ.get("DATABASE_USER"),
         password=os.environ.get("DATABASE_PASSWORD"),
         host=os.environ.get("DATABASE_HOST"),
-        port=os.environ.get("DATABASE_PORT"),
+        port=int(os.environ.get("DATABASE_PORT")),
         options=os.environ.get("DATABASE_OPTIONS"),
     )
     sqlite_conn = sqlite3.connect("db.sqlite")
@@ -52,7 +52,7 @@ def transfer_data_from_sqlite() -> None:
         sqlite_cur.execute(f"select * from {table_name}")
         save_csv(table_name, sqlite_cur)
         copy_csv_to_postgresql(table_name, pg_cur)
-        remove(f"{table_name}.csv")
+        os.remove(f"{table_name}.csv")
 
     pg_conn.commit()
     pg_cur.close()
