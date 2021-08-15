@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class TimeStampedModel(models.Model):
@@ -35,8 +35,7 @@ class Person(TimeStampedModel):
     """Модель персоны."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    first_name = models.CharField(_("first name"), max_length=150)
-    last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    full_name = models.CharField(_("полное имя"), max_length=150)
 
     class Meta:
         verbose_name = _("персона")
@@ -44,7 +43,7 @@ class Person(TimeStampedModel):
         db_table = "person"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.full_name
 
 
 class FilmWorkType(models.TextChoices):
@@ -64,7 +63,7 @@ class FilmWork(TimeStampedModel):
     certificate = models.TextField(_("сертификат"), blank=True)
     file_path = models.FileField(_("файл"), upload_to="film_works/", blank=True)
     rating = models.FloatField(
-        _("рейтинг"), validators=[MinValueValidator(0)], null=True, blank=True
+        _("рейтинг"), validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True
     )
     type = models.CharField(_("тип"), max_length=20, choices=FilmWorkType.choices)
     genres = models.ManyToManyField(Genre, related_name="film_works")
@@ -92,6 +91,7 @@ class Role(models.TextChoices):
 class PersonFilmWork(TimeStampedModel):
     """Модель для связи персоны и кинопроизвдения."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     film_work = models.ForeignKey(FilmWork, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     role = models.CharField(_("роль"), max_length=20, choices=Role.choices)

@@ -1,3 +1,4 @@
+import logging
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -6,7 +7,6 @@ from movies.models import Genre, FilmWork, Person, FilmWorkType, Role
 from math import ceil
 from progress.bar import IncrementalBar
 from random import randint, choice, sample
-from typing import Union
 
 USERS_COUNT = 1000
 PERSONS_COUNT = 10000
@@ -17,45 +17,46 @@ CHUNK_SIZE = 10000
 MAX_GENRES_NUMBER = 4
 MAX_PERSONS_NUMBER = 10
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 def generate_users() -> None:
     """Генерация пользователей."""
-
-    print("start generate users...")
+    logger.info("start generate users...")
     User.objects.bulk_create(UserFactory.build_batch(USERS_COUNT))
-    print("completed", end="\n\n")
+    logger.info("completed")
 
 
 def generate_genres() -> list:
     """Генерация жанров."""
 
-    print("start generate genres...")
+    logger.info("start generate genres...")
     genres = GenreFactory.build_batch(GENRES_COUNT)
     Genre.objects.bulk_create(genres)
-    print("completed", end="\n\n")
+    logger.info("completed")
     return genres
 
 
 def generate_persons() -> list:
     """Генерация персон."""
 
-    print("start generate persons...")
+    logger.info("start generate persons...")
     persons = PersonFactory.build_batch(PERSONS_COUNT)
     Person.objects.bulk_create(persons)
-    print("completed", end="\n\n")
+    logger.info("completed")
     return persons
 
 
-def generate_film_works(
-    genres: list, persons: list, type: Union[FilmWorkType.MOVIE, FilmWorkType.SERIAL]
-) -> None:
+def generate_film_works(genres: list, persons: list, type: FilmWorkType) -> None:
     """Генерация кинопроизведений."""
 
     film_works_count = MOVIES_COUNT if type == FilmWorkType.MOVIE else SERIALS_COUNT
     iterations_number = ceil(film_works_count / CHUNK_SIZE)
     roles = list(Role)
     bar = IncrementalBar("processing", max=iterations_number, suffix="%(percent)d%%")
-    print(f"start generate film works (type: {type.value})...")
+    logger.info("start generate film works (type: %s)...", type)
     for _ in range(iterations_number):
         film_works = FilmWorkFactory.build_batch(CHUNK_SIZE, type=type)
         FilmWork.objects.bulk_create(film_works)
@@ -83,7 +84,6 @@ def generate_film_works(
         FilmWork.genres.through.objects.bulk_create(genres_objects)
         FilmWork.persons.through.objects.bulk_create(persons_objects)
         bar.next()
-    print()
 
 
 class Command(BaseCommand):
@@ -96,4 +96,4 @@ class Command(BaseCommand):
         persons = generate_persons()
         generate_film_works(genres, persons, FilmWorkType.SERIAL)
         generate_film_works(genres, persons, FilmWorkType.MOVIE)
-        print("saving...")
+        logger.info("saving...")
