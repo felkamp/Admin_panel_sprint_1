@@ -42,8 +42,7 @@ class FilmWorkFactory(DjangoModelFactory):
 class PersonFactory(DjangoModelFactory):
     """Фабрика для модели персоны."""
 
-    first_name = Faker("first_name", locale="ru_RU")
-    last_name = Faker("last_name", locale="ru_RU")
+    full_name = Faker("name", locale="ru_RU")
 
     class Meta:
         model = Person

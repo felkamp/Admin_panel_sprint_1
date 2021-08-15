@@ -35,8 +35,7 @@ class Person(TimeStampedModel):
     """Модель персоны."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    first_name = models.CharField(_("first name"), max_length=150)
-    last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    full_name = models.CharField(_("полное имя"), max_length=150)
 
     class Meta:
         verbose_name = _("персона")
@@ -44,7 +43,7 @@ class Person(TimeStampedModel):
         db_table = "person"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.full_name
 
 
 class FilmWorkType(models.TextChoices):
@@ -92,6 +91,7 @@ class Role(models.TextChoices):
 class PersonFilmWork(TimeStampedModel):
     """Модель для связи персоны и кинопроизвдения."""
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     film_work = models.ForeignKey(FilmWork, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     role = models.CharField(_("роль"), max_length=20, choices=Role.choices)

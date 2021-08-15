@@ -28,15 +28,11 @@ class FilmWorkAdmin(admin.ModelAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ("fullname",)
-    fields = ("first_name", "last_name")
+    list_display = ("full_name",)
+    fields = ("full_name",)
     inlines = [PersonFilmWorkInline]
 
-    search_fields = ("first_name", "last_name")
-
-    @admin.display
-    def fullname(self, obj):
-        return obj.first_name + " " + obj.last_name
+    search_fields = ("full_name",)
 
 
 @admin.register(Genre)
