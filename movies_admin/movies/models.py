@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class TimeStampedModel(models.Model):
@@ -63,7 +63,7 @@ class FilmWork(TimeStampedModel):
     certificate = models.TextField(_("сертификат"), blank=True)
     file_path = models.FileField(_("файл"), upload_to="film_works/", blank=True)
     rating = models.FloatField(
-        _("рейтинг"), validators=[MinValueValidator(0)], null=True, blank=True
+        _("рейтинг"), validators=[MinValueValidator(0), MaxValueValidator(10)], null=True, blank=True
     )
     type = models.CharField(_("тип"), max_length=20, choices=FilmWorkType.choices)
     genres = models.ManyToManyField(Genre, related_name="film_works")
